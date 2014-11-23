@@ -1,4 +1,4 @@
-### ME 495 Final Project - Point Cloud Library application for Baxter
+### ME 495 Final Project - PCL application for Baxter
 
 
 Project Description
