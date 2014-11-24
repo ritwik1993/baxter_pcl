@@ -7,5 +7,5 @@ Project Description
 Project Goals
 ------------------------
 
-Additional goals:
+
 
