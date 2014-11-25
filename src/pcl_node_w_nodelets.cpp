@@ -150,7 +150,7 @@ pcl::fromROSMsg(*input, *cloud);
   // Build a passthrough filter to remove spurious NaNs
   pass.setInputCloud (cloud);
   pass.setFilterFieldName ("z");
-  pass.setFilterLimits (0, 1.5);
+  pass.setFilterLimits (0, 1); //data points further away than 1 meter are filtered
   pass.filter (*cloud_filtered);
   std::cerr << "PointCloud after filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
 
