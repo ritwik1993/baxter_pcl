@@ -1,6 +1,8 @@
 #include <ros/ros.h>
 
 #include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/PointStamped.h>
+#include <std_msgs/Header.h>
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
@@ -38,6 +40,7 @@
 
 ros::Publisher pub;
 ros::Publisher pub_obj;
+ros::Publisher pub1;
 typedef pcl::PointXYZ PointT;
 
 float deg2rad(float alpha)
@@ -219,7 +222,29 @@ pcl::fromROSMsg(*input, *cloud);
   {
 	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
 	    }
+std::cerr << "\n header" << cloud_cylinder->header;
+std::cerr << "\n height" << cloud_cylinder->width ;
+std::cerr << "\n x" << cloud_cylinder->points[0].x ;
+std::cerr << "\n y" << cloud_cylinder->points[0].y;
+std::cerr << "\n height" << cloud_cylinder->points[cloud_cylinder->width-1].y - cloud_cylinder->points[0].y;
+std::cerr << "\n z" << cloud_cylinder->points[0].z << std::endl;
+float radius;
+float volume;
+float height;
+height=cloud_cylinder->points[cloud_cylinder->width-1].y - cloud_cylinder->points[0].y;
+radius=coefficients_cylinder->values[6];
+std::cerr << "\n radius " << radius <<std::endl;
+volume=22*radius*radius*height*100*100*100/7;
+std::cerr << "\n volume " << volume <<std::endl;
   pub.publish(*cloud_cylinder);
+geometry_msgs::PointStamped pt;
+pt.header.seq = cloud_cylinder->header.seq;
+//pt.header.stamp = 0;
+pt.header.frame_id = cloud_cylinder->header.frame_id;
+pt.point.x = cloud_cylinder->points[cloud_cylinder->width-1].x;
+pt.point.y = cloud_cylinder->points[cloud_cylinder->width-1].y;
+pt.point.z = cloud_cylinder->points[cloud_cylinder->width-1].z;
+pub1.publish(pt);
 }
 
 int main (int argc, char** argv)
@@ -234,6 +259,7 @@ int main (int argc, char** argv)
   // Create a ROS publisher for the output point cloud
   pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
   pub_obj = nh.advertise<sensor_msgs::PointCloud2> ("objects", 1);
+  pub1 = nh.advertise<geometry_msgs::PointStamped> ("position1", 1);
 
   // Spin
   ros::spin ();
