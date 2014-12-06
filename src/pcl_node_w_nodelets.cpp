@@ -153,8 +153,15 @@ pcl::fromROSMsg(*input, *cloud);
   // Build a passthrough filter to remove spurious NaNs
   pass.setInputCloud (cloud);
   pass.setFilterFieldName ("z");
-  pass.setFilterLimits (0, 1); //data points further away than 1 meter are filtered
+  pass.setFilterLimits (0.5, 1); //data points further away than 1 meter are filtered
   pass.filter (*cloud_filtered);
+
+  //x filter
+  pass.setInputCloud (cloud_filtered);
+  pass.setFilterFieldName ("x");
+  pass.setFilterLimits (-0.25, 0.25); //data points further away than 1 meter are filtered
+  pass.filter (*cloud_filtered);
+
   std::cerr << "PointCloud after filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
 
   // Estimate point normals
@@ -245,6 +252,7 @@ pt.point.x = cloud_cylinder->points[cloud_cylinder->width-1].x;
 pt.point.y = cloud_cylinder->points[cloud_cylinder->width-1].y;
 pt.point.z = cloud_cylinder->points[cloud_cylinder->width-1].z;
 pub1.publish(pt);
+pub_obj.publish(*cloud_filtered2);
 }
 
 int main (int argc, char** argv)
