@@ -135,6 +135,7 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
   pcl::PassThrough<PointT> pass;
   pcl::NormalEstimation<PointT, pcl::Normal> ne;
   pcl::SACSegmentationFromNormals<PointT, pcl::Normal> seg; 
+ pcl::SACSegmentationFromNormals<PointT, pcl::Normal> seg1; 
   pcl::PCDWriter writer;
   pcl::ExtractIndices<PointT> extract;
   pcl::ExtractIndices<pcl::Normal> extract_normals;
@@ -147,7 +148,9 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
   pcl::PointCloud<PointT>::Ptr cloud_filtered2 (new pcl::PointCloud<PointT>);
   pcl::PointCloud<pcl::Normal>::Ptr cloud_normals2 (new pcl::PointCloud<pcl::Normal>);
   pcl::ModelCoefficients::Ptr coefficients_plane (new pcl::ModelCoefficients), coefficients_cylinder (new pcl::ModelCoefficients);
+ pcl::ModelCoefficients::Ptr coefficients_cylinder1 (new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr inliers_plane (new pcl::PointIndices), inliers_cylinder (new pcl::PointIndices);
+ pcl::PointIndices::Ptr inliers_cylinder1 (new pcl::PointIndices);
  std::cerr << "PointCloud has: " << cloud->points.size () << " data points." << std::endl;
 pcl::fromROSMsg(*input, *cloud);
   // Build a passthrough filter to remove spurious NaNs
@@ -171,16 +174,16 @@ pcl::fromROSMsg(*input, *cloud);
   ne.compute (*cloud_normals);
 
   // Create the segmentation object for the planar model and set all the parameters
-  seg.setOptimizeCoefficients (true);
-  seg.setModelType (pcl::SACMODEL_NORMAL_PLANE);
-  seg.setNormalDistanceWeight (0.1);
-  seg.setMethodType (pcl::SAC_RANSAC);
-  seg.setMaxIterations (100);
-  seg.setDistanceThreshold (0.03);
-  seg.setInputCloud (cloud_filtered);
-  seg.setInputNormals (cloud_normals);
+  seg1.setOptimizeCoefficients (true);
+  seg1.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+  seg1.setNormalDistanceWeight (0.1);
+  seg1.setMethodType (pcl::SAC_RANSAC);
+  seg1.setMaxIterations (100);
+  seg1.setDistanceThreshold (0.03);
+  seg1.setInputCloud (cloud_filtered);
+  seg1.setInputNormals (cloud_normals);
   // Obtain the plane inliers and coefficients
-  seg.segment (*inliers_plane, *coefficients_plane);
+  seg1.segment (*inliers_plane, *coefficients_plane);
   std::cerr << "Plane coefficients: " << *coefficients_plane << std::endl;
 
   // Extract the planar inliers from the input cloud
@@ -223,6 +226,8 @@ pcl::fromROSMsg(*input, *cloud);
   extract.setNegative (false);
   pcl::PointCloud<PointT>::Ptr cloud_cylinder (new pcl::PointCloud<PointT> ());
   extract.filter (*cloud_cylinder);
+extract.setNegative (true);
+  extract.filter (*cloud_filtered2);
   if (cloud_cylinder->points.empty ()) 
     std::cerr << "Can't find the cylindrical component." << std::endl;
   else
@@ -252,7 +257,33 @@ pt.point.x = cloud_cylinder->points[cloud_cylinder->width-1].x;
 pt.point.y = cloud_cylinder->points[cloud_cylinder->width-1].y;
 pt.point.z = cloud_cylinder->points[cloud_cylinder->width-1].z;
 pub1.publish(pt);
-pub_obj.publish(*cloud_filtered2);
+
+extract_normals.setNegative (true);
+ extract_normals.setInputCloud (cloud_normals2);
+  extract_normals.setIndices (inliers_cylinder);
+extract_normals.filter (*cloud_normals2);
+ //seg.setOptimizeCoefficients (true);
+  //seg.setModelType (pcl::SACMODEL_CYLINDER);
+  //seg.setMethodType (pcl::SAC_RANSAC);
+  //seg.setNormalDistanceWeight (0.1);
+  //seg.setMaxIterations (10000);
+  //seg.setDistanceThreshold (0.05);
+  //seg.setRadiusLimits (0, 0.1);
+  seg.setInputCloud (cloud_filtered2);
+  seg.setInputNormals (cloud_normals2);
+
+  // Obtain the cylinder inliers and coefficients
+  
+seg.segment (*inliers_cylinder1, *coefficients_cylinder1);
+  extract.setInputCloud (cloud_filtered2);
+  extract.setIndices (inliers_cylinder1);
+  extract.setNegative (false);
+  pcl::PointCloud<PointT>::Ptr cloud_cylinder2 (new pcl::PointCloud<PointT> ());
+  extract.filter (*cloud_cylinder2);
+
+pub_obj.publish(*cloud_cylinder2);
+
+
 }
 
 int main (int argc, char** argv)
