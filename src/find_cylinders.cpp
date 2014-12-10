@@ -117,9 +117,7 @@ pcl::fromROSMsg(*input, *cloud);
   // Write the planar inliers to disk
   pcl::PointCloud<PointT>::Ptr cloud_plane (new pcl::PointCloud<PointT> ());
   extract.filter (*cloud_plane);
-  // std::cerr << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
-  //writer.write ("table_scene_mug_stereo_textured_plane.pcd", *cloud_plane, false);
-
+  
   // Remove the planar inliers, extract the rest
   extract.setNegative (true);
   extract.filter (*cloud_filtered2);
@@ -198,8 +196,7 @@ pcl.header.frame_id = cloud_cylinder1->header.frame_id;
 pcl.point.x = cloud_cylinder1->points[cloud_cylinder1->width-1].x;
 pcl.point.y = cloud_cylinder1->points[cloud_cylinder1->width-1].y+height/2;
 pcl.point.z = cloud_cylinder1->points[cloud_cylinder1->width-1].z;
-//height=cloud_cylinder1->points[cloud_cylinder1->width-1].y - cloud_cylinder1->points[0].y;
-//radius=coefficients_cylinder1->values[6];
+
  pcl.radius=radius;
  pcl.height=height;
 pub1.publish(pcl);
@@ -234,8 +231,6 @@ pcl.header.frame_id = cloud_cylinder2->header.frame_id;
 pcl.point.x = cloud_cylinder2->points[cloud_cylinder2->width-1].x;
 pcl.point.y = cloud_cylinder2->points[cloud_cylinder2->width-1].y+height/2;
 pcl.point.z = cloud_cylinder2->points[cloud_cylinder2->width-1].z;
-//height=cloud_cylinder2->points[cloud_cylinder2->width-1].y - cloud_cylinder2->points[0].y;
-//radius=coefficients_cylinder2->values[6];
  pcl.radius=radius;
  pcl.height=height;
 pub1.publish(pcl);
