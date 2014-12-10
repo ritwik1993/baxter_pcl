@@ -138,54 +138,37 @@ pcl::fromROSMsg(*input, *cloud);
   seg.setRadiusLimits (0, 0.1);
   seg.setInputCloud (cloud_filtered2);
   seg.setInputNormals (cloud_normals2);
+float radius=0;
+ float height=0;
+ int i;
+pcl::PointCloud<PointT>::Ptr cloud_cylinder (new pcl::PointCloud<PointT> ());
 
-  // Obtain the cylinder inliers and coefficients
+ for(i=0;i<10;i++){
   seg.segment (*inliers_cylinder, *coefficients_cylinder);
-  std::cerr << "Cylinder coefficients: " << *coefficients_cylinder << std::endl;
-
-  // Write the cylinder inliers to disk
   extract.setInputCloud (cloud_filtered2);
   extract.setIndices (inliers_cylinder);
-  extract.setNegative (false);
-  pcl::PointCloud<PointT>::Ptr cloud_cylinder (new pcl::PointCloud<PointT> ());
+  extract.setNegative (false);  
   extract.filter (*cloud_cylinder);
+height=height+cloud_cylinder->points[cloud_cylinder->width-1].y - cloud_cylinder->points[0].y;
+radius=radius+coefficients_cylinder->values[6];
+ }
 
-  // if (cloud_cylinder->points.empty ()) 
-  // std::cerr << "Can't find the cylindrical component." << std::endl;
-  // else
-  // {
-  //	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
-  //   }
-  //std::cerr << "\n header" << cloud_cylinder->header;
-  //std::cerr << "\n height" << cloud_cylinder->width ;
-  //std::cerr << "\n x" << cloud_cylinder->points[0].x ;
-  //std::cerr << "\n y" << cloud_cylinder->points[0].y;
-  //std::cerr << "\n height" << cloud_cylinder->points[cloud_cylinder->width-1].y - cloud_cylinder->points[0].y;
-  //std::cerr << "\n z" << cloud_cylinder->points[0].z << std::endl;
-
-float radius;
-float volume;
-float height;
-
-height=cloud_cylinder->points[cloud_cylinder->width-1].y - cloud_cylinder->points[0].y;
-radius=coefficients_cylinder->values[6];
-//std::cerr << "\n radius " << radius <<std::endl;
-//volume=22*radius*radius*height*100*100*100/7;
-//std::cerr << "\n volume " << volume <<std::endl;
-pub.publish(*cloud_cylinder);
+ radius=radius/10;
+ height=height/10;
 geometry_msgs::PointStamped pt;
 pcl_495::pcl_cylinder pcl;
+pub.publish(*cloud_cylinder);
 pcl.header.seq = cloud_cylinder->header.seq;
- pcl.cylinder = 1;
-//pt.header.stamp = 0;
+pcl.cylinder = 1;
 pcl.header.frame_id = cloud_cylinder->header.frame_id;
 pcl.point.x = cloud_cylinder->points[cloud_cylinder->width-1].x;
-pcl.point.y = cloud_cylinder->points[cloud_cylinder->width-1].y;
+pcl.point.y = cloud_cylinder->points[cloud_cylinder->width-1].y+height/2;
 pcl.point.z = cloud_cylinder->points[cloud_cylinder->width-1].z;
  pcl.radius=radius;
  pcl.height=height;
 pub1.publish(pcl);
 
+ pcl::PointCloud<PointT>::Ptr cloud_cylinder1 (new pcl::PointCloud<PointT> ());
 extract.setNegative (true);
 extract.filter (*cloud_filtered2);
 extract_normals.setNegative (true);
@@ -194,26 +177,34 @@ extract_normals.setIndices (inliers_cylinder);
 extract_normals.filter (*cloud_normals2);
 seg.setInputCloud (cloud_filtered2);
 seg.setInputNormals (cloud_normals2);
-seg.segment (*inliers_cylinder1, *coefficients_cylinder1);
-extract.setInputCloud (cloud_filtered2);
-extract.setIndices (inliers_cylinder1);
-extract.setNegative (false);
-pcl::PointCloud<PointT>::Ptr cloud_cylinder1 (new pcl::PointCloud<PointT> ());
-extract.filter (*cloud_cylinder1);
+
+for(i=0;i<10;i++){
+  seg.segment (*inliers_cylinder1, *coefficients_cylinder1);
+  extract.setInputCloud (cloud_filtered2);
+  extract.setIndices (inliers_cylinder1);
+  extract.setNegative (false);  
+  extract.filter (*cloud_cylinder1);
+height=height+cloud_cylinder1->points[cloud_cylinder1->width-1].y - cloud_cylinder1->points[0].y;
+radius=radius+coefficients_cylinder1->values[6];
+ }
+ radius=radius/10;
+ height=height/10;
+
 pub_obj.publish(*cloud_cylinder1);
 pcl.header.seq = cloud_cylinder->header.seq;
  pcl.cylinder = 2;
 //pt.header.stamp = 0;
 pcl.header.frame_id = cloud_cylinder1->header.frame_id;
 pcl.point.x = cloud_cylinder1->points[cloud_cylinder1->width-1].x;
-pcl.point.y = cloud_cylinder1->points[cloud_cylinder1->width-1].y;
+pcl.point.y = cloud_cylinder1->points[cloud_cylinder1->width-1].y+height/2;
 pcl.point.z = cloud_cylinder1->points[cloud_cylinder1->width-1].z;
-height=cloud_cylinder1->points[cloud_cylinder1->width-1].y - cloud_cylinder1->points[0].y;
-radius=coefficients_cylinder1->values[6];
+//height=cloud_cylinder1->points[cloud_cylinder1->width-1].y - cloud_cylinder1->points[0].y;
+//radius=coefficients_cylinder1->values[6];
  pcl.radius=radius;
  pcl.height=height;
 pub1.publish(pcl);
 
+ pcl::PointCloud<PointT>::Ptr cloud_cylinder2 (new pcl::PointCloud<PointT> ());
 extract.setNegative (true);
 extract.filter (*cloud_filtered2);
 extract_normals.setNegative (true);
@@ -222,22 +213,29 @@ extract_normals.setIndices (inliers_cylinder1);
 extract_normals.filter (*cloud_normals2);
 seg.setInputCloud (cloud_filtered2);
 seg.setInputNormals (cloud_normals2);
-seg.segment (*inliers_cylinder2, *coefficients_cylinder2);
-extract.setInputCloud (cloud_filtered2);
-extract.setIndices (inliers_cylinder2);
-extract.setNegative (false);
-pcl::PointCloud<PointT>::Ptr cloud_cylinder2 (new pcl::PointCloud<PointT> ());
-extract.filter (*cloud_cylinder2);
+
+for(i=0;i<10;i++){
+  seg.segment (*inliers_cylinder2, *coefficients_cylinder2);
+  extract.setInputCloud (cloud_filtered2);
+  extract.setIndices (inliers_cylinder2);
+  extract.setNegative (false);  
+  extract.filter (*cloud_cylinder2);
+height=height+cloud_cylinder2->points[cloud_cylinder2->width-1].y - cloud_cylinder2->points[0].y;
+radius=radius+coefficients_cylinder2->values[6];
+ }
+ radius=radius/10;
+ height=height/10;
+
 pub1_obj.publish(*cloud_cylinder2);
 pcl.header.seq = cloud_cylinder->header.seq;
  pcl.cylinder = 3;
 //pt.header.stamp = 0;
 pcl.header.frame_id = cloud_cylinder2->header.frame_id;
 pcl.point.x = cloud_cylinder2->points[cloud_cylinder2->width-1].x;
-pcl.point.y = cloud_cylinder2->points[cloud_cylinder2->width-1].y;
+pcl.point.y = cloud_cylinder2->points[cloud_cylinder2->width-1].y+height/2;
 pcl.point.z = cloud_cylinder2->points[cloud_cylinder2->width-1].z;
-height=cloud_cylinder2->points[cloud_cylinder2->width-1].y - cloud_cylinder2->points[0].y;
-radius=coefficients_cylinder2->values[6];
+//height=cloud_cylinder2->points[cloud_cylinder2->width-1].y - cloud_cylinder2->points[0].y;
+//radius=coefficients_cylinder2->values[6];
  pcl.radius=radius;
  pcl.height=height;
 pub1.publish(pcl);
