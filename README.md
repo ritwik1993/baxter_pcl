@@ -1,11 +1,5 @@
-### ME 495 Final Project - PCL application for Baxter
+PCL application for Baxter
 
-
-Project Description
-------------------------
-
-Project Goals
-------------------------
-
+see (this metapackage)[https://github.com/sherifm/baxter_sort] for more details
 
 
